@@ -319,16 +319,18 @@ export default function Table({ data, loading, fetchData }: TableProps) {
             <div className="editForm">
               <div className="formGrid">
                 <DatePicker
-                  selected={form.date}
-                  onChange={(date: Date | null) =>
-  setForm((prev) => ({
-    ...prev,
-    date: date || new Date(),
-  }))
-}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="Select date"
-                />
+
+  selected={form.date}
+  onChange={(date: Date | null) =>
+    setForm((prev) => ({
+      ...prev,
+      date: date || new Date(),
+    }))
+  }
+  dateFormat="dd/MM/yyyy"
+  placeholderText="Select date"
+/>
+
 
                 <select name="type" value={form.type} onChange={handleFormChange}>
                   <option value="Income">Income</option>
