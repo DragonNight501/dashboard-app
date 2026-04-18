@@ -404,7 +404,7 @@ export default function Table({ data, loading, fetchData }: TableProps) {
               <div className="formGrid">
                 <DatePicker
                   selected={editingDate}
-                  onChange={(date) => setEditingDate(date)}
+                  onChange={(date: Date | null) => setEditingDate(date)}
                   dateFormat="dd/MM/yyyy"
                   placeholderText="Select date"
                 />
