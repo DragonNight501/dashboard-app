@@ -129,6 +129,9 @@ export default function LoginPage() {
             disabled={loading}
           />
         </div>
+        <Link href="/forgot-password" className="authSwitchLink">
+          Forgot password ?
+        </Link>
 
         <button type="submit" className="saveBtn" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
