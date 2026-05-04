@@ -1,11 +1,19 @@
 "use client";
 
+/* ===================== */
+/* Imports */
+/* ===================== */
+
 import { useEffect, useMemo, useState } from "react";
 import type { Transaction } from "../page";
 import { supabase } from "../lib/supabase";
 import toast from "react-hot-toast";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+
+/* ===================== */
+/* Types */
+/* ===================== */
 
 type TableProps = {
   data: Transaction[];
@@ -22,7 +30,17 @@ type FormState = {
   status: string;
 };
 
+/* ===================== */
+/* Transactions Table */
+/* Handles filtering, pagination, add, edit, delete, and CSV export.
+ */
+/* ===================== */
+
 export default function Table({ data, loading, fetchData }: TableProps) {
+  /* ===================== */
+  /* State Management */
+  /* ===================== */
+
   const [editingItem, setEditingItem] = useState<Transaction | null>(null);
   const [editingDate, setEditingDate] = useState<Date | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -46,6 +64,12 @@ export default function Table({ data, loading, fetchData }: TableProps) {
 
   const itemsPerPage = 5;
 
+  /* ===================== */
+  /* Filtering */
+  /* Filters transactions by search text, type, and status.
+   */
+  /* ===================== */
+
   const filteredData = useMemo(() => {
     const text = search.toLowerCase();
 
@@ -55,11 +79,18 @@ export default function Table({ data, loading, fetchData }: TableProps) {
         item.category.toLowerCase().includes(text);
 
       const matchesType = typeFilter === "All" || item.type === typeFilter;
-      const matchesStatus = statusFilter === "All" || item.status === statusFilter;
+      const matchesStatus =
+        statusFilter === "All" || item.status === statusFilter;
 
       return matchesSearch && matchesType && matchesStatus;
     });
   }, [data, search, typeFilter, statusFilter]);
+
+  /* ===================== */
+  /* Pagination */
+  /* Keeps pagination safe when filters change.
+   */
+  /* ===================== */
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
@@ -77,10 +108,14 @@ export default function Table({ data, loading, fetchData }: TableProps) {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = filteredData.slice(
     startIndex,
-    startIndex + itemsPerPage
+    startIndex + itemsPerPage,
   );
 
-  const resetForm = () => {
+  /* ===================== */
+  /* Form Helpers */
+  /* ===================== */
+
+  function resetForm() {
     setForm({
       date: new Date(),
       type: "Income",
@@ -89,22 +124,22 @@ export default function Table({ data, loading, fetchData }: TableProps) {
       category: "",
       status: "Pending",
     });
-  };
+  }
 
-  const handleFormChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  function handleFormChange(
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) {
     const { name, value } = event.target;
 
     setForm((prev) => ({
       ...prev,
       [name]: name === "amount" ? Number(value) : value,
     }));
-  };
+  }
 
-  const handleEditChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  function handleEditChange(
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) {
     if (!editingItem) return;
 
     const { name, value } = event.target;
@@ -113,47 +148,23 @@ export default function Table({ data, loading, fetchData }: TableProps) {
       ...editingItem,
       [name]: name === "amount" ? Number(value) : value,
     });
-  };
+  }
 
-  const handleEditClick = (item: Transaction) => {
+  /* ===================== */
+  /* Edit Transaction */
+  /* ===================== */
+
+  function handleEditClick(item: Transaction) {
     setEditingItem(item);
     setEditingDate(new Date(item.date));
-  };
+  }
 
-  const handleCancelEdit = () => {
+  function handleCancelEdit() {
     setEditingItem(null);
     setEditingDate(null);
-  };
+  }
 
-  const handleAdd = async () => {
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData.user;
-
-    if (!user) {
-      toast.error("You must be logged in");
-      return;
-    }
-
-    const { error } = await supabase.from("transactions").insert([
-      {
-        ...form,
-        date: form.date.toISOString().split("T")[0],
-        user_id: user.id,
-      },
-    ]);
-
-    if (error) {
-      toast.error("Failed to add transaction");
-      return;
-    }
-
-    toast.success("Transaction added successfully");
-    setShowAddForm(false);
-    resetForm();
-    await fetchData();
-  };
-
-  const handleUpdate = async () => {
+  async function handleUpdate() {
     if (!editingItem) return;
 
     const { id, ...updatedFields } = editingItem;
@@ -179,9 +190,45 @@ export default function Table({ data, loading, fetchData }: TableProps) {
     setEditingItem(null);
     setEditingDate(null);
     await fetchData();
-  };
+  }
 
-  const handleDelete = async () => {
+  /* ===================== */
+  /* Add Transaction */
+  /* ===================== */
+
+  async function handleAdd() {
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData.user;
+
+    if (!user) {
+      toast.error("You must be logged in");
+      return;
+    }
+
+    const { error } = await supabase.from("transactions").insert([
+      {
+        ...form,
+        date: form.date.toISOString().split("T")[0],
+        user_id: user.id,
+      },
+    ]);
+
+    if (error) {
+      toast.error("Failed to add transaction");
+      return;
+    }
+
+    toast.success("Transaction added successfully");
+    setShowAddForm(false);
+    resetForm();
+    await fetchData();
+  }
+
+  /* ===================== */
+  /* Delete Transaction */
+  /* ===================== */
+
+  async function handleDelete() {
     if (deleteId === null) return;
 
     setIsDeleting(true);
@@ -201,9 +248,15 @@ export default function Table({ data, loading, fetchData }: TableProps) {
     toast.success("Transaction deleted successfully");
     setDeleteId(null);
     await fetchData();
-  };
+  }
 
-  const handleExportCSV = () => {
+  /* ===================== */
+  /* CSV Export */
+  /* Exports the currently filtered transactions.
+   */
+  /* ===================== */
+
+  function handleExportCSV() {
     if (filteredData.length === 0) {
       toast.error("No data available to export");
       return;
@@ -230,7 +283,7 @@ export default function Table({ data, loading, fetchData }: TableProps) {
     const csvContent = [
       headers.join(","),
       ...rows.map((row) =>
-        row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(",")
+        row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","),
       ),
     ].join("\n");
 
@@ -249,17 +302,25 @@ export default function Table({ data, loading, fetchData }: TableProps) {
     URL.revokeObjectURL(url);
 
     toast.success("CSV exported successfully");
-  };
+  }
+
+  /* ===================== */
+  /* UI Rendering */
+  /* ===================== */
 
   return (
     <div className="tabularWrapper">
       <h3 className="mainTitle">Transactions</h3>
 
+      {/* ===================== */}
+      {/* Filters + Actions */}
+      {/* ===================== */}
+
       <div className="tableTopBar">
         <div className="filtersGroup">
           <input
             type="text"
-            placeholder="Search transactions..."
+            placeholder="Search by description or category..."
             value={search}
             onChange={(event) => {
               setSearch(event.target.value);
@@ -306,12 +367,23 @@ export default function Table({ data, loading, fetchData }: TableProps) {
         </div>
       </div>
 
+      {/* ===================== */}
+      {/* Add Transaction Modal */}
+      {/* ===================== */}
+
       {showAddForm && (
         <div className="modalOverlay" onClick={() => setShowAddForm(false)}>
-          <div className="modalBox" onClick={(event) => event.stopPropagation()}>
+          <div
+            className="modalBox"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="modalHeader">
               <h4>Add Transaction</h4>
-              <button className="closeBtn" onClick={() => setShowAddForm(false)}>
+
+              <button
+                className="closeBtn"
+                onClick={() => setShowAddForm(false)}
+              >
                 ✕
               </button>
             </div>
@@ -319,20 +391,22 @@ export default function Table({ data, loading, fetchData }: TableProps) {
             <div className="editForm">
               <div className="formGrid">
                 <DatePicker
+                  selected={form.date}
+                  onChange={(date: Date | null) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      date: date || new Date(),
+                    }))
+                  }
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Select date"
+                />
 
-  selected={form.date}
-  onChange={(date: Date | null) =>
-    setForm((prev) => ({
-      ...prev,
-      date: date || new Date(),
-    }))
-  }
-  dateFormat="dd/MM/yyyy"
-  placeholderText="Select date"
-/>
-
-
-                <select name="type" value={form.type} onChange={handleFormChange}>
+                <select
+                  name="type"
+                  value={form.type}
+                  onChange={handleFormChange}
+                >
                   <option value="Income">Income</option>
                   <option value="Expenses">Expenses</option>
                 </select>
@@ -375,6 +449,7 @@ export default function Table({ data, loading, fetchData }: TableProps) {
                 <button className="saveBtn" onClick={handleAdd}>
                   Save
                 </button>
+
                 <button
                   className="cancelBtn"
                   onClick={() => {
@@ -390,11 +465,19 @@ export default function Table({ data, loading, fetchData }: TableProps) {
         </div>
       )}
 
+      {/* ===================== */}
+      {/* Edit Transaction Modal */}
+      {/* ===================== */}
+
       {editingItem && (
         <div className="modalOverlay" onClick={handleCancelEdit}>
-          <div className="modalBox" onClick={(event) => event.stopPropagation()}>
+          <div
+            className="modalBox"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="modalHeader">
               <h4>Edit Transaction</h4>
+
               <button className="closeBtn" onClick={handleCancelEdit}>
                 ✕
               </button>
@@ -456,6 +539,7 @@ export default function Table({ data, loading, fetchData }: TableProps) {
                 <button className="saveBtn" onClick={handleUpdate}>
                   Save Changes
                 </button>
+
                 <button className="cancelBtn" onClick={handleCancelEdit}>
                   Cancel
                 </button>
@@ -464,6 +548,10 @@ export default function Table({ data, loading, fetchData }: TableProps) {
           </div>
         </div>
       )}
+
+      {/* ===================== */}
+      {/* Delete Confirmation Modal */}
+      {/* ===================== */}
 
       {deleteId !== null && (
         <div className="deleteModalOverlay" onClick={() => setDeleteId(null)}>
@@ -474,6 +562,7 @@ export default function Table({ data, loading, fetchData }: TableProps) {
             <div className="deleteModalIcon">🗑️</div>
 
             <h4>Delete Transaction</h4>
+
             <p>
               Are you sure you want to delete this transaction? This action
               cannot be undone.
@@ -500,7 +589,13 @@ export default function Table({ data, loading, fetchData }: TableProps) {
         </div>
       )}
 
-      {loading && <p style={{ marginBottom: "1rem" }}>Loading transactions...</p>}
+      {/* ===================== */}
+      {/* Table */}
+      {/* ===================== */}
+
+      {loading && (
+        <div className="tableLoadingState">Loading transactions...</div>
+      )}
 
       <div className="tableContainer">
         <table>
@@ -532,6 +627,7 @@ export default function Table({ data, loading, fetchData }: TableProps) {
                   >
                     Edit
                   </button>
+
                   <button
                     className="deleteBtn"
                     onClick={() => setDeleteId(item.id)}
@@ -544,14 +640,21 @@ export default function Table({ data, loading, fetchData }: TableProps) {
 
             {!loading && filteredData.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ textAlign: "center", padding: "1.5rem" }}>
-                  No transactions found.
+                <td colSpan={7}>
+                  <div className="tableEmptyState">
+                    No transactions found. Try changing your filters or add a
+                    new transaction.
+                  </div>
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+
+      {/* ===================== */}
+      {/* Pagination */}
+      {/* ===================== */}
 
       {totalPages > 1 && (
         <div className="pagination">
@@ -566,7 +669,9 @@ export default function Table({ data, loading, fetchData }: TableProps) {
           {Array.from({ length: totalPages }, (_, index) => (
             <button
               key={index + 1}
-              className={`pageBtn ${currentPage === index + 1 ? "activePage" : ""}`}
+              className={`pageBtn ${
+                currentPage === index + 1 ? "activePage" : ""
+              }`}
               onClick={() => setCurrentPage(index + 1)}
             >
               {index + 1}
