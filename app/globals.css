@@ -1592,3 +1592,42 @@ body.dark .activeItem {
     text-align: center;
     border: 1px solid var(--border);
 }
+/* ===================== */
+/* Auth Session Loading */
+/* ===================== */
+
+.authLoadingPage {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.authLoadingCard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    color: var(--text-soft);
+    font-size: 14px;
+}
+
+.authLoadingSpinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #e5e7eb;
+    border-top-color: var(--primary);
+    border-radius: 999px;
+    animation: authSpin 0.7s linear infinite;
+}
+
+@keyframes authSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
