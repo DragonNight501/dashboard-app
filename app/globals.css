@@ -1631,3 +1631,21 @@ body.dark .activeItem {
         transform: rotate(360deg);
     }
 }
+/* ===================== */
+/* Profile Page Polish */
+/* ===================== */
+
+.profilePage {
+    padding: 2rem;
+}
+
+.profileIdentity {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.profileIdentity p {
+    color: var(--text-soft);
+    font-size: 14px;
+}
