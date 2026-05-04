@@ -1,32 +1,48 @@
 "use client";
 
+/* ===================== */
+/* Imports */
+/* ===================== */
+
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
 import toast from "react-hot-toast";
 
+/* ===================== */
+/* Logout Button */
+/* Signs the user out and redirects to login.
+ */
+/* ===================== */
+
 export default function LogoutButton() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
-  const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
+  async function handleLogout() {
+    if (loading) return;
 
-      if (error) {
-        toast.error("Failed to log out");
-        return;
-      }
+    setLoading(true);
 
-      toast.success("Logged out successfully");
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast.error("Something went wrong");
+    const loadingToast = toast.loading("Logging out...");
+
+    const { error } = await supabase.auth.signOut();
+
+    toast.dismiss(loadingToast);
+    setLoading(false);
+
+    if (error) {
+      toast.error("Failed to log out");
+      return;
     }
-  };
+
+    toast.success("Logged out successfully");
+    router.replace("/login");
+  }
 
   return (
-    <button className="logoutBtn" onClick={handleLogout}>
-      Logout
+    <button className="logoutBtn" onClick={handleLogout} disabled={loading}>
+      {loading ? "Logging out..." : "Logout"}
     </button>
   );
 }
