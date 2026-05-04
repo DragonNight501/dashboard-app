@@ -1082,7 +1082,32 @@ tr:nth-child(even) {
 .authSwitchLink:hover {
     text-decoration: underline;
 }
+.authHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin-bottom: 0.5rem;
+}
 
+.authEyebrow {
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.authSubtitle {
+    color: var(--text-soft);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.authFields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
 /* ===================== */
 /* Sidebar */
 /* ===================== */
