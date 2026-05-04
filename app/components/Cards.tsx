@@ -1,13 +1,41 @@
 "use client";
 
+/* ===================== */
+/* Imports */
+/* ===================== */
+
 import type { Transaction } from "../page";
+
+/* ===================== */
+/* Types */
+/* ===================== */
 
 type Props = {
   transactions: Transaction[];
   loading: boolean;
 };
 
+type OverviewCard = {
+  title: string;
+  value: string | number;
+  detail: string;
+  icon: string;
+  cardClass: string;
+  iconClass: string;
+  valueClass?: string;
+};
+
+/* ===================== */
+/* Dashboard Overview Cards */
+/* Calculates and displays the main financial summary metrics.
+ */
+/* ===================== */
+
 export default function Cards({ transactions, loading }: Props) {
+  /* ===================== */
+  /* Financial Calculations */
+  /* ===================== */
+
   const income = transactions
     .filter((transaction) => transaction.type === "Income")
     .reduce((sum, transaction) => sum + Number(transaction.amount), 0);
@@ -18,66 +46,74 @@ export default function Cards({ transactions, loading }: Props) {
 
   const balance = income - expenses;
 
+  /* ===================== */
+  /* Card Configuration */
+  /* Keeps the UI easier to update and avoids repeated JSX.
+   */
+  /* ===================== */
+
+  const cards: OverviewCard[] = [
+    {
+      title: "Total Income",
+      value: `$${income.toFixed(2)}`,
+      detail: "All income transactions",
+      icon: "$",
+      cardClass: "lightGreen",
+      iconClass: "darkGreen",
+    },
+    {
+      title: "Total Expenses",
+      value: `$${expenses.toFixed(2)}`,
+      detail: "All expense transactions",
+      icon: "$",
+      cardClass: "lightRed",
+      iconClass: "darkRed",
+    },
+    {
+      title: "Balance",
+      value: `$${balance.toFixed(2)}`,
+      detail: "Current balance",
+      icon: "≡",
+      cardClass: "lightBlue",
+      iconClass: "darkBlue",
+      valueClass: balance >= 0 ? "positiveValue" : "negativeValue",
+    },
+    {
+      title: "Transactions",
+      value: transactions.length,
+      detail: "Total records",
+      icon: "#",
+      cardClass: "lightPurple",
+      iconClass: "darkPurple",
+    },
+  ];
+
+  /* ===================== */
+  /* UI Rendering */
+  /* ===================== */
+
   return (
     <div className="cardContainer">
       <h3 className="mainTitle">Overview</h3>
 
       <div className="cardWrapper">
-        <div className="paymentCard lightGreen">
-          <div className="cardHeader">
-            <div className="amount">
-              <span className="title">Total Income</span>
-              <span className="amountValue">
-                {loading ? "..." : `$${income.toFixed(2)}`}
-              </span>
-            </div>
-            <div className="icon darkGreen">$</div>
-          </div>
-          <span className="cardDetail">All income transactions</span>
-        </div>
+        {cards.map((card) => (
+          <div key={card.title} className={`paymentCard ${card.cardClass}`}>
+            <div className="cardHeader">
+              <div className="amount">
+                <span className="title">{card.title}</span>
 
-        <div className="paymentCard lightRed">
-          <div className="cardHeader">
-            <div className="amount">
-              <span className="title">Total Expenses</span>
-              <span className="amountValue">
-                {loading ? "..." : `$${expenses.toFixed(2)}`}
-              </span>
-            </div>
-            <div className="icon darkRed">$</div>
-          </div>
-          <span className="cardDetail">All expense transactions</span>
-        </div>
+                <span className={`amountValue ${card.valueClass || ""}`}>
+                  {loading ? "..." : card.value}
+                </span>
+              </div>
 
-        <div className="paymentCard lightBlue">
-          <div className="cardHeader">
-            <div className="amount">
-              <span className="title">Balance</span>
-              <span
-                className={`amountValue ${
-                  balance >= 0 ? "positiveValue" : "negativeValue"
-                }`}
-              >
-                {loading ? "..." : `$${balance.toFixed(2)}`}
-              </span>
+              <div className={`icon ${card.iconClass}`}>{card.icon}</div>
             </div>
-            <div className="icon darkBlue">≡</div>
-          </div>
-          <span className="cardDetail">Current balance</span>
-        </div>
 
-        <div className="paymentCard lightPurple">
-          <div className="cardHeader">
-            <div className="amount">
-              <span className="title">Transactions</span>
-              <span className="amountValue">
-                {loading ? "..." : transactions.length}
-              </span>
-            </div>
-            <div className="icon darkPurple">#</div>
+            <span className="cardDetail">{card.detail}</span>
           </div>
-          <span className="cardDetail">Total records</span>
-        </div>
+        ))}
       </div>
     </div>
   );

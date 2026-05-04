@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+/* ===================== */
+/* Imports */
+/* ===================== */
+
+import { useEffect, useMemo, useState } from "react";
 import type { Transaction } from "../page";
 import {
   LineChart,
@@ -12,32 +16,60 @@ import {
   CartesianGrid,
 } from "recharts";
 
+/* ===================== */
+/* Types */
+/* ===================== */
+
 type Props = {
   transactions: Transaction[];
 };
 
+/* ===================== */
+/* Monthly Line Chart */
+/* Displays monthly aggregated transaction amounts over time.
+ */
+/* ===================== */
+
 export default function MonthlyLineChart({ transactions }: Props) {
   const [isMounted, setIsMounted] = useState(false);
+
+  /* ===================== */
+  /* Client Mount Check */
+  /* ===================== */
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const groupedData = transactions.reduce<Record<string, number>>(
-    (acc, transaction) => {
-      const month = transaction.date.slice(0, 7);
-      acc[month] = (acc[month] || 0) + Number(transaction.amount);
-      return acc;
-    },
-    {}
-  );
+  /* ===================== */
+  /* Chart Data */
+  /* Groups transactions by month and calculates totals.
+   */
+  /* ===================== */
 
-  const chartData = Object.entries(groupedData)
-    .map(([month, total]) => ({
-      month,
-      total,
-    }))
-    .sort((a, b) => a.month.localeCompare(b.month));
+  const chartData = useMemo(() => {
+    const grouped = transactions.reduce<Record<string, number>>(
+      (acc, transaction) => {
+        const month = transaction.date.slice(0, 7); // YYYY-MM
+        acc[month] = (acc[month] || 0) + Number(transaction.amount);
+        return acc;
+      },
+      {},
+    );
+
+    return Object.entries(grouped)
+      .map(([month, total]) => ({
+        month,
+        total,
+      }))
+      .sort((a, b) => a.month.localeCompare(b.month));
+  }, [transactions]);
+
+  const hasData = chartData.length > 0;
+
+  /* ===================== */
+  /* UI Rendering */
+  /* ===================== */
 
   return (
     <div className="chartContainer">
@@ -45,8 +77,8 @@ export default function MonthlyLineChart({ transactions }: Props) {
 
       {!isMounted ? (
         <div className="chartEmptyState">Loading chart...</div>
-      ) : chartData.length === 0 ? (
-        <div className="chartEmptyState">No data available</div>
+      ) : !hasData ? (
+        <div className="chartEmptyState">No monthly data available</div>
       ) : (
         <div className="chartBox">
           <ResponsiveContainer width="100%" height={320}>
@@ -55,11 +87,14 @@ export default function MonthlyLineChart({ transactions }: Props) {
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
+
               <Line
                 type="monotone"
                 dataKey="total"
                 stroke="#3b82f6"
                 strokeWidth={3}
+                dot={{ r: 3 }}
+                activeDot={{ r: 6 }}
               />
             </LineChart>
           </ResponsiveContainer>

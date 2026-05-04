@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+/* ===================== */
+/* Imports */
+/* ===================== */
+
+import { useEffect, useMemo, useState } from "react";
 import type { Transaction } from "../page";
 import {
   PieChart,
@@ -11,29 +15,55 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+/* ===================== */
+/* Types */
+/* ===================== */
+
 type Props = {
   transactions: Transaction[];
 };
 
+/* ===================== */
+/* Status Pie Chart */
+/* Visualizes transaction status distribution (Completed vs Pending).
+ */
+/* ===================== */
+
 export default function StatusPieChart({ transactions }: Props) {
   const [isMounted, setIsMounted] = useState(false);
+
+  /* ===================== */
+  /* Client Mount Check */
+  /* ===================== */
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const completed = transactions.filter(
-    (transaction) => transaction.status === "Completed"
-  ).length;
+  /* ===================== */
+  /* Chart Data */
+  /* ===================== */
 
-  const pending = transactions.filter(
-    (transaction) => transaction.status === "Pending"
-  ).length;
+  const chartData = useMemo(() => {
+    const completed = transactions.filter(
+      (transaction) => transaction.status === "Completed",
+    ).length;
 
-  const data = [
-    { name: "Completed", value: completed, color: "#22c55e" },
-    { name: "Pending", value: pending, color: "#facc15" },
-  ].filter((item) => item.value > 0);
+    const pending = transactions.filter(
+      (transaction) => transaction.status === "Pending",
+    ).length;
+
+    return [
+      { name: "Completed", value: completed, color: "#22c55e" },
+      { name: "Pending", value: pending, color: "#facc15" },
+    ].filter((item) => item.value > 0);
+  }, [transactions]);
+
+  const hasData = chartData.length > 0;
+
+  /* ===================== */
+  /* UI Rendering */
+  /* ===================== */
 
   return (
     <div className="chartContainer">
@@ -41,14 +71,14 @@ export default function StatusPieChart({ transactions }: Props) {
 
       {!isMounted ? (
         <div className="chartEmptyState">Loading chart...</div>
-      ) : data.length === 0 ? (
-        <div className="chartEmptyState">No data available</div>
+      ) : !hasData ? (
+        <div className="chartEmptyState">No status data available</div>
       ) : (
         <div className="chartBox">
           <ResponsiveContainer width="100%" height={320}>
             <PieChart>
               <Pie
-                data={data}
+                data={chartData}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
@@ -57,8 +87,8 @@ export default function StatusPieChart({ transactions }: Props) {
                 outerRadius={90}
                 paddingAngle={4}
               >
-                {data.map((entry, index) => (
-                  <Cell key={index} fill={entry.color} />
+                {chartData.map((entry) => (
+                  <Cell key={entry.name} fill={entry.color} />
                 ))}
               </Pie>
 
