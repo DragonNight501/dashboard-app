@@ -1692,3 +1692,55 @@ body.dark tbody tr:hover {
 body.dark tbody tr:hover td {
     color: #f9fafb;
 }
+/* ===================== */
+/* Final UI Polish */
+/* ===================== */
+
+.dashboardPage {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.cardContainer,
+.chartContainer,
+.budgetCard,
+.tabularWrapper,
+.profileCard {
+    transition: var(--transition);
+}
+
+.cardContainer:hover,
+.chartContainer:hover,
+.budgetCard:hover,
+.tabularWrapper:hover,
+.profileCard:hover {
+    box-shadow: var(--shadow-hover);
+}
+
+.mainTitle {
+    letter-spacing: 0.2px;
+}
+
+.chartContainer .mainTitle,
+.cardContainer .mainTitle,
+.budgetCard .mainTitle,
+.tabularWrapper .mainTitle {
+    margin-bottom: 0.4rem;
+}
+
+.tableContainer {
+    border-radius: var(--radius-md);
+}
+
+thead th {
+    font-size: 13px;
+    letter-spacing: 0.3px;
+}
+
+tbody tr {
+    border-bottom: 1px solid var(--border);
+}
+
+body.dark tbody tr {
+    border-bottom: 1px solid #374151;
+}
