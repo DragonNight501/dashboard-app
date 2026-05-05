@@ -30,9 +30,12 @@ type FormState = {
   status: string;
 };
 
+type SortKey = "date" | "amount" | "description";
+type SortDirection = "asc" | "desc";
+
 /* ===================== */
 /* Transactions Table */
-/* Handles filtering, pagination, add, edit, delete, and CSV export.
+/* Handles filtering, sorting, pagination, add, edit, delete, and CSV export.
  */
 /* ===================== */
 
@@ -58,6 +61,9 @@ export default function Table({ data, loading, fetchData }: TableProps) {
   const [typeFilter, setTypeFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [sortKey, setSortKey] = useState<SortKey>("date");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -87,12 +93,38 @@ export default function Table({ data, loading, fetchData }: TableProps) {
   }, [data, search, typeFilter, statusFilter]);
 
   /* ===================== */
-  /* Pagination */
-  /* Keeps pagination safe when filters change.
+  /* Sorting */
+  /* Sorts filtered transactions by date, amount, or description.
    */
   /* ===================== */
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const sortedData = useMemo(() => {
+    return [...filteredData].sort((a, b) => {
+      if (sortKey === "amount") {
+        return sortDirection === "asc"
+          ? Number(a.amount) - Number(b.amount)
+          : Number(b.amount) - Number(a.amount);
+      }
+
+      if (sortKey === "date") {
+        return sortDirection === "asc"
+          ? new Date(a.date).getTime() - new Date(b.date).getTime()
+          : new Date(b.date).getTime() - new Date(a.date).getTime();
+      }
+
+      return sortDirection === "asc"
+        ? a.description.localeCompare(b.description)
+        : b.description.localeCompare(a.description);
+    });
+  }, [filteredData, sortKey, sortDirection]);
+
+  /* ===================== */
+  /* Pagination */
+  /* Keeps pagination safe when filters or sorting change.
+   */
+  /* ===================== */
+
+  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
 
   useEffect(() => {
     if (totalPages === 0) {
@@ -106,10 +138,10 @@ export default function Table({ data, loading, fetchData }: TableProps) {
   }, [currentPage, totalPages]);
 
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filteredData.slice(
-    startIndex,
-    startIndex + itemsPerPage,
-  );
+  const paginatedData = sortedData.slice(startIndex, startIndex + itemsPerPage);
+
+  const visibleStart = sortedData.length === 0 ? 0 : startIndex + 1;
+  const visibleEnd = Math.min(startIndex + itemsPerPage, sortedData.length);
 
   /* ===================== */
   /* Form Helpers */
@@ -148,6 +180,28 @@ export default function Table({ data, loading, fetchData }: TableProps) {
       ...editingItem,
       [name]: name === "amount" ? Number(value) : value,
     });
+  }
+
+  /* ===================== */
+  /* Sort Handler */
+  /* Toggles sort direction when clicking the same field.
+   */
+  /* ===================== */
+
+  function handleSort(key: SortKey) {
+    if (sortKey === key) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+      return;
+    }
+
+    setSortKey(key);
+    setSortDirection("desc");
+  }
+
+  function getSortLabel(key: SortKey) {
+    if (sortKey !== key) return "";
+
+    return sortDirection === "asc" ? " ↑" : " ↓";
   }
 
   /* ===================== */
@@ -252,12 +306,12 @@ export default function Table({ data, loading, fetchData }: TableProps) {
 
   /* ===================== */
   /* CSV Export */
-  /* Exports the currently filtered transactions.
+  /* Exports the currently filtered and sorted transactions.
    */
   /* ===================== */
 
   function handleExportCSV() {
-    if (filteredData.length === 0) {
+    if (sortedData.length === 0) {
       toast.error("No data available to export");
       return;
     }
@@ -271,7 +325,7 @@ export default function Table({ data, loading, fetchData }: TableProps) {
       "Status",
     ];
 
-    const rows = filteredData.map((item) => [
+    const rows = sortedData.map((item) => [
       item.date,
       item.type,
       item.description,
@@ -310,7 +364,14 @@ export default function Table({ data, loading, fetchData }: TableProps) {
 
   return (
     <div className="tabularWrapper">
-      <h3 className="mainTitle">Transactions</h3>
+      <div className="tableHeaderInfo">
+        <div>
+          <h3 className="mainTitle">Transactions</h3>
+          <p className="tableInfo">
+            Showing {visibleStart}-{visibleEnd} of {sortedData.length} results
+          </p>
+        </div>
+      </div>
 
       {/* ===================== */}
       {/* Filters + Actions */}
@@ -601,10 +662,38 @@ export default function Table({ data, loading, fetchData }: TableProps) {
         <table>
           <thead>
             <tr>
-              <th>Date</th>
+              <th>
+                <button
+                  type="button"
+                  className="tableSortButton"
+                  onClick={() => handleSort("date")}
+                >
+                  Date{getSortLabel("date")}
+                </button>
+              </th>
+
               <th>Type</th>
-              <th>Description</th>
-              <th>Amount</th>
+
+              <th>
+                <button
+                  type="button"
+                  className="tableSortButton"
+                  onClick={() => handleSort("description")}
+                >
+                  Description{getSortLabel("description")}
+                </button>
+              </th>
+
+              <th>
+                <button
+                  type="button"
+                  className="tableSortButton"
+                  onClick={() => handleSort("amount")}
+                >
+                  Amount{getSortLabel("amount")}
+                </button>
+              </th>
+
               <th>Category</th>
               <th>Status</th>
               <th>Actions</th>
@@ -638,7 +727,7 @@ export default function Table({ data, loading, fetchData }: TableProps) {
               </tr>
             ))}
 
-            {!loading && filteredData.length === 0 && (
+            {!loading && sortedData.length === 0 && (
               <tr>
                 <td colSpan={7}>
                   <div className="tableEmptyState">

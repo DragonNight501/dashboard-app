@@ -1649,3 +1649,46 @@ body.dark .activeItem {
     color: var(--text-soft);
     font-size: 14px;
 }
+/* ===================== */
+/* Table Sorting Polish */
+/* ===================== */
+
+.tableHeaderInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.tableSortButton {
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+}
+
+.tableSortButton:hover {
+    text-decoration: underline;
+}
+
+tbody tr {
+    transition: var(--transition);
+}
+
+tbody tr:hover {
+    background: #fff1f2;
+}
+
+/* Dark mode hover */
+body.dark tbody tr:hover {
+    background: #253044;
+}
+
+/* Ensure text stays visible in dark mode */
+body.dark tbody tr:hover td {
+    color: #f9fafb;
+}
