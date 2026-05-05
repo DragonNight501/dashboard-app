@@ -1,80 +1,98 @@
-# 💰 Finance Dashboard
+# 💸 FinTrack Dashboard
 
-A modern finance dashboard built with Next.js, TypeScript, and Supabase.
+A modern full-stack finance dashboard built with Next.js and Supabase to track income, expenses, and budgets with a clean and interactive UI.
 
-## 🚀 Overview
+---
 
-This project is a full-stack finance dashboard that allows users to manage personal financial data through a clean and responsive interface.
+## 🚀 Live Demo
 
-Users can:
-- Sign up and log in
-- Manage transactions
-- Track budgets
-- View analytics and charts
-- Switch between light and dark mode
+👉 https://mohamad-dashboard.vercel.app
+
+---
+
+## 📸 Screenshots
+
+### Dashboard
+Dashboard
+![Dashboard](./screenshots/dashboard.png)
+
+### Charts
+Charts
+![Charts](./screenshots/charts.png)
+### Transactions
+Transactions
+![Transactions](./screenshots/table.png)
+### Profile
+Profile
+![Profile](./screenshots/profile.png) 
 
 ## ✨ Features
 
-- 🔐 User authentication (Supabase)
-- ➕ Add, edit, and delete transactions
-- 📊 Interactive charts and analytics
-- 💵 Budget management
-- 📁 CSV export
-- 📥 Excel import
-- 👤 Profile page
-- 🌙 Dark mode
-- 📱 Fully responsive design
+- 🔐 Authentication (Login / Signup / Reset Password)
+- 📊 Interactive Charts (Bar, Pie, Line)
+- 💰 Income & Expense Tracking
+- 📁 CSV Export
+- 📥 Excel Import
+- 🎯 Budget Management
+- 👤 User Profile (Avatar + Password Update)
+- 🌗 Dark / Light Mode
+- ⚡ Real-time data with Supabase
 
-## 🛠 Tech Stack
+---
 
-- Next.js
-- TypeScript
-- React
-- Supabase
-- CSS
-- Recharts
-- React Hot Toast
-- React DatePicker
-- XLSX
+## 🛠️ Tech Stack
 
-## 🌐 Live Demo
+- Frontend: Next.js (App Router), TypeScript  
+- Backend: Supabase (Auth, Database, Storage)  
+- Charts: Recharts  
+- UI: Custom CSS  
+- Notifications: React Hot Toast  
 
-👉 https://dashboard-app-ta4z-3ndbfpz5c-hadi11.vercel.app
+---
 
-## 📦 Getting Started
+## 📂 Project Structure
 
-### 1. Clone the repository
+/app  
+/components  
+/lib  
+/public  
+/screenshots  
 
-```bash
-git clone https://github.com/DragonNight501/dashboard-app.git
-cd dashboard-app
+---
 
-2. Install dependencies
-npm install
+## ⚙️ Environment Variables
 
-3. Create environment variables
+Create a .env.local file:
 
-Create a file named .env.local in the root of the project and add:
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+env NEXT_PUBLIC_SUPABASE_URL=your_url NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key 
 
-4. Run the development server
-npm run dev
+---
 
-Then open:
+## 🧪 Run Locally
 
-http://localhost:3000
+bash npm install npm run dev 
 
-⚠️ Notes
+---
 
-* The project uses Supabase for authentication and database operations.
-* Environment variables must be added locally and in Vercel.
-* Never expose your secret key.
+## 📦 Build
 
-🚀 Deployment
+bash npm run build npm start 
 
-The project is deployed on Vercel and connected to GitHub for automatic redeployment.
+---
 
-👨‍💻 Author
+## 👨‍💻 Author
 
-Mohamad Hadi
+Mohamad
+
+---
+
+## ⭐ About This Project
+
+This project is a portfolio-ready finance dashboard demonstrating:
+
+- Full-stack development with Supabase  
+- Authentication flows (login, signup, reset password)  
+- Data visualization with charts  
+- CRUD operations (transactions & budgets)  
+- Clean and modern UI/UX  
+- Production deployment on Vercel
