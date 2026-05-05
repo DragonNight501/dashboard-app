@@ -83,10 +83,19 @@ export default function MonthlyLineChart({ transactions }: Props) {
         <div className="chartBox">
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+
+              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+
+              <YAxis tick={{ fontSize: 12 }} />
+
+              <Tooltip
+                contentStyle={{
+                  borderRadius: "12px",
+                  border: "1px solid #e5e7eb",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+                }}
+              />
 
               <Line
                 type="monotone"

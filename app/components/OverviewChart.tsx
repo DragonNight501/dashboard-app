@@ -83,12 +83,20 @@ export default function OverviewChart({ transactions }: Props) {
         <div className="chartBox">
           <ResponsiveContainer width="100%" height={320}>
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
 
-              <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+
+              <YAxis tick={{ fontSize: 12 }} />
+
+              <Tooltip
+                contentStyle={{
+                  borderRadius: "12px",
+                  border: "1px solid #e5e7eb",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+                }}
+              />
+              <Bar dataKey="value" radius={[14, 14, 0, 0]} barSize={52}>
                 {chartData.map((entry) => (
                   <Cell key={entry.name} fill={entry.color} />
                 ))}

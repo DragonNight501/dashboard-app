@@ -25,24 +25,16 @@ type Props = {
 
 /* ===================== */
 /* Status Pie Chart */
-/* Visualizes transaction status distribution (Completed vs Pending).
+/* Visualizes transaction status distribution.
  */
 /* ===================== */
 
 export default function StatusPieChart({ transactions }: Props) {
   const [isMounted, setIsMounted] = useState(false);
 
-  /* ===================== */
-  /* Client Mount Check */
-  /* ===================== */
-
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  /* ===================== */
-  /* Chart Data */
-  /* ===================== */
 
   const chartData = useMemo(() => {
     const completed = transactions.filter(
@@ -60,10 +52,6 @@ export default function StatusPieChart({ transactions }: Props) {
   }, [transactions]);
 
   const hasData = chartData.length > 0;
-
-  /* ===================== */
-  /* UI Rendering */
-  /* ===================== */
 
   return (
     <div className="chartContainer">
@@ -83,17 +71,24 @@ export default function StatusPieChart({ transactions }: Props) {
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={90}
-                paddingAngle={4}
+                innerRadius={65}
+                outerRadius={95}
+                paddingAngle={5}
               >
                 {chartData.map((entry) => (
                   <Cell key={entry.name} fill={entry.color} />
                 ))}
               </Pie>
 
-              <Tooltip />
-              <Legend />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: "12px",
+                  border: "1px solid #e5e7eb",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+                }}
+              />
+
+              <Legend verticalAlign="bottom" height={36} iconType="circle" />
             </PieChart>
           </ResponsiveContainer>
         </div>
