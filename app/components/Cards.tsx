@@ -1,95 +1,68 @@
 "use client";
 
-/* ===================== */
-/* Imports */
-/* ===================== */
-
+import { useMemo } from "react";
 import type { Transaction } from "../page";
-
-/* ===================== */
-/* Types */
-/* ===================== */
 
 type Props = {
   transactions: Transaction[];
   loading: boolean;
 };
 
-type OverviewCard = {
-  title: string;
-  value: string | number;
-  detail: string;
-  icon: string;
-  cardClass: string;
-  iconClass: string;
-  valueClass?: string;
-};
-
-/* ===================== */
-/* Dashboard Overview Cards */
-/* Calculates and displays the main financial summary metrics.
- */
-/* ===================== */
-
 export default function Cards({ transactions, loading }: Props) {
   /* ===================== */
-  /* Financial Calculations */
+  /* Basic Calculations */
   /* ===================== */
 
   const income = transactions
-    .filter((transaction) => transaction.type === "Income")
-    .reduce((sum, transaction) => sum + Number(transaction.amount), 0);
+    .filter((t) => t.type === "Income")
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const expenses = transactions
-    .filter((transaction) => transaction.type === "Expenses")
-    .reduce((sum, transaction) => sum + Number(transaction.amount), 0);
+    .filter((t) => t.type === "Expenses")
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const balance = income - expenses;
 
   /* ===================== */
-  /* Card Configuration */
-  /* Keeps the UI easier to update and avoids repeated JSX.
-   */
+  /* Advanced Insights */
   /* ===================== */
 
-  const cards: OverviewCard[] = [
-    {
-      title: "Total Income",
-      value: `$${income.toFixed(2)}`,
-      detail: "All income transactions",
-      icon: "$",
-      cardClass: "lightGreen",
-      iconClass: "darkGreen",
-    },
-    {
-      title: "Total Expenses",
-      value: `$${expenses.toFixed(2)}`,
-      detail: "All expense transactions",
-      icon: "$",
-      cardClass: "lightRed",
-      iconClass: "darkRed",
-    },
-    {
-      title: "Balance",
-      value: `$${balance.toFixed(2)}`,
-      detail: "Current balance",
-      icon: "≡",
-      cardClass: "lightBlue",
-      iconClass: "darkBlue",
-      valueClass: balance >= 0 ? "positiveValue" : "negativeValue",
-    },
-    {
-      title: "Transactions",
-      value: transactions.length,
-      detail: "Total records",
-      icon: "#",
-      cardClass: "lightPurple",
-      iconClass: "darkPurple",
-    },
-  ];
+  const insights = useMemo(() => {
+    if (transactions.length === 0) return null;
+
+    // Highest spending category
+    const categoryMap: Record<string, number> = {};
+
+    transactions
+      .filter((t) => t.type === "Expenses")
+      .forEach((t) => {
+        categoryMap[t.category] =
+          (categoryMap[t.category] || 0) + Number(t.amount);
+      });
+
+    const topCategory = Object.entries(categoryMap).sort(
+      (a, b) => b[1] - a[1],
+    )[0];
+
+    // Latest transaction
+    const latest = [...transactions].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    )[0];
+
+    // Monthly average
+    const months = new Set(transactions.map((t) => t.date.slice(0, 7))).size;
+
+    const avg = months ? expenses / months : 0;
+
+    return {
+      topCategory,
+      latest,
+      avg,
+    };
+  }, [transactions]);
 
   /* ===================== */
-  /* UI Rendering */
+  /* UI */
   /* ===================== */
 
   return (
@@ -97,24 +70,76 @@ export default function Cards({ transactions, loading }: Props) {
       <h3 className="mainTitle">Overview</h3>
 
       <div className="cardWrapper">
-        {cards.map((card) => (
-          <div key={card.title} className={`paymentCard ${card.cardClass}`}>
-            <div className="cardHeader">
-              <div className="amount">
-                <span className="title">{card.title}</span>
+        <Card title="Income" value={income} loading={loading} color="green" />
+        <Card title="Expenses" value={expenses} loading={loading} color="red" />
+        <Card title="Balance" value={balance} loading={loading} color="blue" />
+        <Card
+          title="Transactions"
+          value={transactions.length}
+          loading={loading}
+          color="purple"
+          isCount
+        />
+      </div>
 
-                <span className={`amountValue ${card.valueClass || ""}`}>
-                  {loading ? "..." : card.value}
-                </span>
-              </div>
+      {/* ===================== */}
+      {/* Insights Section */}
+      {/* ===================== */}
 
-              <div className={`icon ${card.iconClass}`}>{card.icon}</div>
-            </div>
-
-            <span className="cardDetail">{card.detail}</span>
+      {insights && (
+        <div className="cardWrapper" style={{ marginTop: "1rem" }}>
+          <div className="paymentCard lightBlue">
+            <span className="title">Top Spending Category</span>
+            <span className="amountValue">
+              {insights.topCategory
+                ? `${insights.topCategory[0]} ($${insights.topCategory[1].toFixed(
+                    2,
+                  )})`
+                : "—"}
+            </span>
           </div>
-        ))}
+
+          <div className="paymentCard lightPurple">
+            <span className="title">Latest Transaction</span>
+            <span className="amountValue">
+              {insights.latest
+                ? `${insights.latest.description} ($${insights.latest.amount})`
+                : "—"}
+            </span>
+          </div>
+
+          <div className="paymentCard lightGreen">
+            <span className="title">Monthly Avg Expenses</span>
+            <span className="amountValue">${insights.avg.toFixed(2)}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ===================== */
+/* Reusable Card */
+/* ===================== */
+
+function Card({ title, value, loading, color, isCount }: any) {
+  return (
+    <div className={`paymentCard light${capitalize(color)}`}>
+      <div className="cardHeader">
+        <div className="amount">
+          <span className="title">{title}</span>
+          <span className="amountValue">
+            {loading ? "..." : isCount ? value : `$${Number(value).toFixed(2)}`}
+          </span>
+        </div>
+        <div className={`icon dark${capitalize(color)}`}>
+          {title === "Transactions" ? "#" : "$"}
+        </div>
       </div>
     </div>
   );
+}
+
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
