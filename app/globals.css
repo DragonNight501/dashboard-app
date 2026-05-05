@@ -47,8 +47,8 @@
 
 body {
     font-family: Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
 }
 
 button,
@@ -101,7 +101,54 @@ main {
     font-size: 16px;
     font-weight: 700;
 }
+/* ===================== */
+/* Navbar */
+/* ===================== */
 
+.navbar {
+    width: 100%;
+    padding: 1rem 2rem;
+    margin-bottom: 1.5rem;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    border-radius: 16px;
+
+    background: linear-gradient(135deg, #1e293b, #111827, #0f172a);
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.logo {
+    color: white;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.navRight {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.navBtn {
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    border: none;
+
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    font-size: 14px;
+
+    transition: 0.2s;
+}
+
+.navBtn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
 /* ===================== */
 /* Overview Cards */
 /* ===================== */
@@ -122,19 +169,26 @@ main {
 }
 
 .paymentCard {
-    border-radius: var(--radius-lg);
+    border-radius: 18px;
     padding: 1.2rem;
     min-height: 155px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: var(--transition);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+
+    backdrop-filter: blur(12px);
+
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.08),
+        rgba(255, 255, 255, 0.02)
+    );
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    transition: 0.25s;
 }
 
 .paymentCard:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-hover);
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
 }
 
 .cardHeader {
@@ -1743,4 +1797,183 @@ tbody tr {
 
 body.dark tbody tr {
     border-bottom: 1px solid #374151;
+}
+/* ===================== */
+/* Dashboard Title */
+/* ===================== */
+
+.dashboardTitleBlock {
+    margin-bottom: 1rem;
+}
+
+.dashboardTitleBlock h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.dashboardTitleBlock p {
+    margin-top: 0.35rem;
+    color: var(--text-soft);
+    font-size: 14px;
+}
+
+/* ===================== */
+/* Fix Card Content Alignment */
+/* ===================== */
+
+.paymentCard {
+    gap: 1rem;
+    overflow: hidden;
+}
+
+.paymentCard .amount {
+    min-width: 0;
+}
+
+.paymentCard .title {
+    display: block;
+    margin-bottom: 0.4rem;
+    line-height: 1.3;
+}
+
+.paymentCard .amountValue {
+    display: block;
+    max-width: 100%;
+    font-size: clamp(20px, 2vw, 28px);
+    line-height: 1.15;
+    word-break: break-word;
+}
+
+.cardDetail {
+    line-height: 1.4;
+}
+
+/* Insight cards without icon header */
+.insightCard {
+    justify-content: flex-start;
+}
+
+.insightCard .amountValue {
+    margin-top: 0.6rem;
+}
+
+/* ===================== */
+/* Theme Background Fix */
+/* ===================== */
+
+body {
+    background:
+        radial-gradient(
+            circle at top left,
+            rgba(59, 130, 246, 0.18),
+            transparent 32%
+        ),
+        linear-gradient(135deg, #f8fafc, #e5e7eb);
+    color: var(--text);
+}
+
+body.dark {
+    background:
+        radial-gradient(
+            circle at top left,
+            rgba(59, 130, 246, 0.22),
+            transparent 32%
+        ),
+        linear-gradient(135deg, #0f172a, #111827);
+    color: var(--text);
+}
+
+body.dark .cardContainer,
+body.dark .chartContainer,
+body.dark .budgetCard,
+body.dark .tabularWrapper,
+body.dark .profileCard {
+    background: rgba(31, 41, 55, 0.78);
+    backdrop-filter: blur(14px);
+}
+/* ===================== */
+/* Navbar Theme Fix */
+/* ===================== */
+
+.navbar {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.75),
+        rgba(248, 250, 252, 0.55)
+    );
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    backdrop-filter: blur(16px);
+}
+
+.logo {
+    color: #111827;
+}
+
+.navBtn {
+    background: rgba(15, 23, 42, 0.06);
+    color: #111827;
+}
+
+.navBtn:hover {
+    background: rgba(15, 23, 42, 0.12);
+}
+
+body.dark .navbar {
+    background: linear-gradient(
+        135deg,
+        rgba(30, 41, 59, 0.9),
+        rgba(15, 23, 42, 0.9)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.dark .logo {
+    color: transparent;
+}
+
+body.dark .navBtn {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+}
+
+body.dark .navBtn:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+/* ===================== */
+/* Animated Gradient Titles */
+/* ===================== */
+
+.logo,
+.dashboardTitleBlock h1,
+.mainTitle {
+    background: linear-gradient(
+        90deg,
+        #22c55e,
+        #3b82f6,
+        #8b5cf6,
+        #ec4899,
+        #f97316,
+        #22c55e
+    );
+    background-size: 300% 300%;
+    animation: gradientMove 7s ease infinite;
+
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+@keyframes gradientMove {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
 }

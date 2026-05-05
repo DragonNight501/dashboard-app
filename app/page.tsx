@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import AuthGuard from "./components/AuthGuard";
 import Header from "./components/Header";
+import Navbar from "./components/Navbar";
 import Cards from "./components/Cards";
 import OverviewChart from "./components/OverviewChart";
 import StatusPieChart from "./components/StatusPieChart";
@@ -107,12 +108,16 @@ export default function HomePage() {
 
   return (
     <AuthGuard>
+      <Navbar />
       <main className="dashboardPage">
         {/* ===================== */}
         {/* Header Section */}
         {/* ===================== */}
 
-        <Header title="Dashboard" />
+        <div className="dashboardTitleBlock">
+          <h1>Dashboard</h1>
+          <p>Track your income, expenses, budgets, and financial activity.</p>
+        </div>
 
         {/* ===================== */}
         {/* Summary Section */}

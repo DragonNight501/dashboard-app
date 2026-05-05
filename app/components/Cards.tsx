@@ -88,7 +88,7 @@ export default function Cards({ transactions, loading }: Props) {
 
       {insights && (
         <div className="cardWrapper" style={{ marginTop: "1rem" }}>
-          <div className="paymentCard lightBlue">
+          <div className="paymentCard lightBlue insightCard">
             <span className="title">Top Spending Category</span>
             <span className="amountValue">
               {insights.topCategory
@@ -99,7 +99,7 @@ export default function Cards({ transactions, loading }: Props) {
             </span>
           </div>
 
-          <div className="paymentCard lightPurple">
+          <div className="paymentCard lightBlue insightCard">
             <span className="title">Latest Transaction</span>
             <span className="amountValue">
               {insights.latest
@@ -108,7 +108,7 @@ export default function Cards({ transactions, loading }: Props) {
             </span>
           </div>
 
-          <div className="paymentCard lightGreen">
+          <div className="paymentCard lightGreen insightCard">
             <span className="title">Monthly Avg Expenses</span>
             <span className="amountValue">${insights.avg.toFixed(2)}</span>
           </div>
