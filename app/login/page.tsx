@@ -1,178 +1,134 @@
 "use client";
 
 /* ===================== */
-/* Imports */
+/* Login */
 /* ===================== */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { supabase } from "../lib/supabase";
+import toast from "react-hot-toast";
+import { ArrowRight, FlaskConical } from "lucide-react";
+import AuthLayout from "../components/auth/AuthLayout";
+import { useRedirectIfSignedIn } from "../components/auth/useRedirectIfSignedIn";
 import { login } from "../lib/auth";
 import { exitDemo, startDemo } from "../lib/demo";
-import toast from "react-hot-toast";
-import Link from "next/link";
-
-/* ===================== */
-/* Login Page */
-/* Handles user authentication and redirects authenticated users.
- */
-/* ===================== */
+import { friendlyError } from "../lib/format";
 
 export default function LoginPage() {
   const router = useRouter();
-
-  /* ===================== */
-  /* State Management */
-  /* ===================== */
+  const checking = useRedirectIfSignedIn();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [checking, setChecking] = useState(true);
+  const [error, setError] = useState("");
 
-  /* ===================== */
-  /* Session Check */
-  /* Redirects logged-in users away from the login page.
-   */
-  /* ===================== */
-
-  useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (session) {
-        router.replace("/");
-        return;
-      }
-
-      setChecking(false);
-    };
-
-    checkSession();
-  }, [router]);
-
-  /* ===================== */
-  /* Login Handler */
-  /* Authenticates the user with Supabase.
-   */
-  /* ===================== */
-
-  const handleLogin = async (event: React.FormEvent) => {
+  async function handleLogin(event: FormEvent) {
     event.preventDefault();
-
     if (loading) return;
 
     setLoading(true);
-
-    const loadingToast = toast.loading("Logging in...");
-
-    const error = await login(email, password);
-
-    toast.dismiss(loadingToast);
+    setError("");
+    const loginError = await login(email.trim(), password);
     setLoading(false);
 
-    if (error) {
-      toast.error(error.message);
+    if (loginError) {
+      setError(friendlyError(loginError.message, "Login failed"));
       return;
     }
 
     // A real account replaces any demo session in this browser.
     exitDemo();
-    toast.success("Logged in successfully");
+    toast.success("Welcome back");
     router.push("/");
-  };
+  }
 
-  /* ===================== */
-  /* Demo Handler */
-  /* Opens the dashboard with sample data, no account needed.
-   */
-  /* ===================== */
-
-  const handleDemo = () => {
+  function handleDemo() {
     startDemo();
     toast.success("Welcome to the demo");
     router.push("/");
-  };
-
-  /* ===================== */
-  /* Loading State */
-  /* ===================== */
-
-  if (checking) {
-    return (
-      <main className="authPage">
-        <div className="authForm">
-          <p className="authSwitchText">Checking session...</p>
-        </div>
-      </main>
-    );
   }
 
-  /* ===================== */
-  /* UI Rendering */
-  /* ===================== */
-
   return (
-    <main className="authPage">
-      <form className="authForm" onSubmit={handleLogin}>
-        <div className="authHeader">
-          <p className="authEyebrow">Finance Dashboard</p>
-          <h1>Welcome Back</h1>
-          <p className="authSubtitle">
-            Log in to manage your transactions, budgets, and analytics.
-          </p>
-        </div>
-
-        <div className="authFields">
+    <AuthLayout eyebrow="Welcome back" title="Log in" subtitle="Manage your transactions, budgets and analytics.">
+      <form onSubmit={handleLogin} className="space-y-4" aria-busy={checking}>
+        <div>
+          <label className="label" htmlFor="email">
+            Email
+          </label>
           <input
+            id="email"
+            className="field"
             type="email"
-            placeholder="Email address"
+            autoComplete="email"
+            placeholder="you@example.com"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
             disabled={loading}
           />
+        </div>
 
+        <div>
+          <div className="flex items-baseline justify-between">
+            <label className="label" htmlFor="password">
+              Password
+            </label>
+            <Link href="/forgot-password" className="text-xs text-muted hover:text-accent">
+              Forgot password?
+            </Link>
+          </div>
           <input
+            id="password"
+            className="field"
             type="password"
-            placeholder="Password"
+            autoComplete="current-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
             disabled={loading}
           />
         </div>
-        <Link href="/forgot-password" className="authSwitchLink">
-          Forgot password ?
-        </Link>
 
-        <button type="submit" className="saveBtn" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
+        {error ? (
+          <p role="alert" className="rounded-lg bg-expense/10 px-3 py-2 text-sm text-expense">
+            {error}
+          </p>
+        ) : null}
 
-        <p className="authSwitchText">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="authSwitchLink">
-            Create one
-          </Link>
-        </p>
-
-        <div className="authDivider" role="separator">
-          <span>or</span>
-        </div>
-
-        <button
-          type="button"
-          className="demoEntryBtn"
-          onClick={handleDemo}
-          disabled={loading}
-        >
-          Explore the demo
-          <span>No account needed · sample data</span>
+        <button type="submit" className="btn btn-primary w-full py-2.5" disabled={loading || checking}>
+          {loading ? "Logging in…" : "Log in"} <ArrowRight className="h-4 w-4" />
         </button>
       </form>
-    </main>
+
+      <p className="mt-5 text-center text-sm text-muted">
+        No account yet?{" "}
+        <Link href="/signup" className="font-medium text-fg hover:text-accent">
+          Create one
+        </Link>
+      </p>
+
+      <div className="my-6 flex items-center gap-3 font-mono text-[11px] tracking-[0.2em] text-faint uppercase" role="separator">
+        <span className="h-px flex-1 bg-line" /> or <span className="h-px flex-1 bg-line" />
+      </div>
+
+      <button
+        type="button"
+        onClick={handleDemo}
+        disabled={loading}
+        className="group flex w-full items-center gap-4 rounded-xl border border-dashed border-accent/40 bg-accent/[0.04] px-4 py-3.5 text-left transition hover:border-accent/70 hover:bg-accent/[0.08]"
+      >
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent">
+          <FlaskConical className="h-4 w-4" />
+        </span>
+        <span className="flex-1">
+          <span className="block text-sm font-medium">Explore the demo</span>
+          <span className="block text-xs text-muted">No account needed · six months of sample data</span>
+        </span>
+        <ArrowRight className="h-4 w-4 text-faint transition group-hover:translate-x-0.5 group-hover:text-accent" />
+      </button>
+    </AuthLayout>
   );
 }

@@ -103,10 +103,10 @@ export default function AuthGuard({ children, allowDemo = false }: AuthGuardProp
 
   if (isChecking) {
     return (
-      <main className="authLoadingPage">
-        <div className="authLoadingCard">
-          <div className="authLoadingSpinner" />
-          <p>Checking your session...</p>
+      <main className="grid min-h-screen place-items-center bg-paper" aria-busy="true">
+        <div className="flex items-center gap-3 font-mono text-xs text-faint">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-line-strong border-t-accent" />
+          Checking your session…
         </div>
       </main>
     );

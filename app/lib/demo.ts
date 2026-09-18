@@ -133,17 +133,23 @@ function createSeed() {
         description,
         amount,
         category,
-        // Recent freelance invoices are still waiting to be paid.
-        status: monthsAgo === 0 && category === "Freelance" ? "Pending" : "Completed",
+        // This month's utility bill is still open.
+        status: monthsAgo === 0 && category === "Utilities" ? "Pending" : "Completed",
         user_id: DEMO_USER,
       });
     }
   }
 
+  // The most recent freelance invoice has not been paid yet.
+  const lastFreelance = [...transactions].reverse().find((item) => item.category === "Freelance");
+  if (lastFreelance) lastFreelance.status = "Pending";
+
+  // Monthly limits chosen to show every state early in any month:
+  // Housing is over (rent lands on the 3rd), Transport is close, Groceries fills up.
   const budgets: Budget[] = [
-    { id: "demo-budget-1", category: "Dining", amount: 300 },
-    { id: "demo-budget-2", category: "Travel", amount: 1000 },
-    { id: "demo-budget-3", category: "Subscriptions", amount: 150 },
+    { id: "demo-budget-1", category: "Groceries", amount: 350 },
+    { id: "demo-budget-2", category: "Transport", amount: 60 },
+    { id: "demo-budget-3", category: "Housing", amount: 1100 },
   ];
 
   return { transactions, budgets };

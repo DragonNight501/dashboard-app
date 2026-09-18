@@ -1,98 +1,83 @@
-# 💸 FinTrack Dashboard
+# FinTrack — Finance Dashboard
 
-A modern full-stack finance dashboard built with Next.js and Supabase to track income, expenses, and budgets with a clean and interactive UI.
+Track income, expenses and monthly budgets, with charts, Excel/CSV import and CSV export.
 
----
+**Live:** https://mohamad-dashboard.vercel.app · **Try it without an account:** https://mohamad-dashboard.vercel.app/demo
 
-## 🚀 Live Demo
+<p align="center">
+  <img src="./screenshots/dashboard.png" width="900" alt="FinTrack dashboard" />
+</p>
 
-👉 https://mohamad-dashboard.vercel.app
+## Features
 
----
+- **Demo mode** — explore the full app with six months of sample data, no sign-up. Demo data stays in the browser and never reaches the database.
+- **Overview** — net balance, this month's income and expenses compared with last month, savings rate, pending items and top spending category.
+- **Cash flow chart** — income and expenses per month with the net result, plus spending by category.
+- **Monthly budgets** — limits per category, measured against the current month, with warnings near and over the limit.
+- **Transactions** — search, filter, sort, paginate, add, edit and delete.
+- **Import** — `.xlsx` and `.csv`; column names are matched case-insensitively, Excel date cells and German formats (`1.234,56`, `12.09.2026`) are understood, and invalid rows are skipped and reported.
+- **Export** — the filtered view as CSV, in the same format the importer reads.
+- **Accounts** — sign-up with email confirmation, password reset, profile with avatar and a password change that verifies the current password.
+- **Light and dark themes** without a flash on load; respects reduced-motion settings.
 
-## 📸 Screenshots
+## Tech stack
 
-### Dashboard
-Dashboard
-![Dashboard](./screenshots/dashboard.png)
+- Next.js 16 (App Router) · React 19 · TypeScript
+- Supabase (Auth, Postgres, Storage)
+- Tailwind CSS v4 · Recharts · lucide-react
+- read-excel-file for spreadsheet import
 
-### Charts
-Charts
-![Charts](./screenshots/charts.png)
-### Transactions
-Transactions
-![Transactions](./screenshots/table.png)
-### Profile
-Profile
-![Profile](./screenshots/profile.png) 
+## Getting started
 
-## ✨ Features
+```bash
+npm install
+npm run dev
+```
 
-- 🔐 Authentication (Login / Signup / Reset Password)
-- 📊 Interactive Charts (Bar, Pie, Line)
-- 💰 Income & Expense Tracking
-- 📁 CSV Export
-- 📥 Excel Import
-- 🎯 Budget Management
-- 👤 User Profile (Avatar + Password Update)
-- 🌗 Dark / Light Mode
-- ⚡ Real-time data with Supabase
+Create `.env.local`:
 
----
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+```
 
-## 🛠️ Tech Stack
+### Database
 
-- Frontend: Next.js (App Router), TypeScript  
-- Backend: Supabase (Auth, Database, Storage)  
-- Charts: Recharts  
-- UI: Custom CSS  
-- Notifications: React Hot Toast  
+Tables `transactions` (`id`, `date`, `type`, `description`, `amount`, `category`, `status`, `user_id`) and `budgets` (`id`, `category`, `amount`, `user_id`), and a public storage bucket `avatars`. Row Level Security must be enabled so users only see their own rows:
 
----
+```sql
+alter table public.transactions enable row level security;
+alter table public.budgets      enable row level security;
 
-## 📂 Project Structure
+create policy "own transactions" on public.transactions
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
-/app  
-/components  
-/lib  
-/public  
-/screenshots  
+create policy "own budgets" on public.budgets
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+```
 
----
+The app additionally filters every update and delete by `user_id`.
 
-## ⚙️ Environment Variables
+## Project structure
 
-Create a .env.local file:
+```
+app/
+├── page.tsx                    dashboard
+├── demo/                       one-click demo link
+├── login · signup · forgot-password · reset-password · profile
+├── components/
+│   ├── dashboard/              summary, charts, budgets, transactions, dialogs
+│   ├── layout/                 navbar, theme toggle, demo banner
+│   ├── auth/                   shared auth layout
+│   └── ui/                     dialog, confirm dialog
+└── lib/
+    ├── data.ts                 single data layer (Supabase or demo store)
+    ├── demo.ts                 demo mode and sample data
+    ├── finance.ts              all dashboard calculations
+    ├── import.ts               spreadsheet parsing and CSV export
+    └── format.ts               money and date formatting (no UTC shifts)
+```
 
-env NEXT_PUBLIC_SUPABASE_URL=your_url NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key 
+## Author
 
----
-
-## 🧪 Run Locally
-
-bash npm install npm run dev 
-
----
-
-## 📦 Build
-
-bash npm run build npm start 
-
----
-
-## 👨‍💻 Author
-
-Mohamad
-
----
-
-## ⭐ About This Project
-
-This project is a portfolio-ready finance dashboard demonstrating:
-
-- Full-stack development with Supabase  
-- Authentication flows (login, signup, reset password)  
-- Data visualization with charts  
-- CRUD operations (transactions & budgets)  
-- Clean and modern UI/UX  
-- Production deployment on Vercel
+Built by [Mohamad Hadi Dabbah Aljimal](https://portfolio-mohamad-dabbah.vercel.app).

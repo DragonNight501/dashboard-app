@@ -54,16 +54,23 @@ export async function addTransactions(rows: NewTransaction[]): Promise<Result> {
   return error ? { error: "failed" } : ok;
 }
 
-export async function updateTransaction(
-  id: number,
-  fields: Omit<Transaction, "id">,
-): Promise<Result> {
+export async function updateTransaction(id: number, fields: NewTransaction): Promise<Result> {
   if (isDemoMode()) {
     demoStore.updateTransaction(id, fields);
     return ok;
   }
 
-  const { error } = await supabase.from("transactions").update(fields).eq("id", id);
+  const userId = await currentUserId();
+  if (!userId) return { error: "not_authenticated" };
+
+  // Filtering by user_id too means a row can only be changed by its owner,
+  // even if the table's RLS policies were ever misconfigured.
+  const { error } = await supabase
+    .from("transactions")
+    .update(fields)
+    .eq("id", id)
+    .eq("user_id", userId);
+
   return error ? { error: "failed" } : ok;
 }
 
@@ -73,7 +80,15 @@ export async function deleteTransaction(id: number): Promise<Result> {
     return ok;
   }
 
-  const { error } = await supabase.from("transactions").delete().eq("id", id);
+  const userId = await currentUserId();
+  if (!userId) return { error: "not_authenticated" };
+
+  const { error } = await supabase
+    .from("transactions")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
+
   return error ? { error: "failed" } : ok;
 }
 
@@ -110,6 +125,9 @@ export async function deleteBudget(id: string): Promise<Result> {
     return ok;
   }
 
-  const { error } = await supabase.from("budgets").delete().eq("id", id);
+  const userId = await currentUserId();
+  if (!userId) return { error: "not_authenticated" };
+
+  const { error } = await supabase.from("budgets").delete().eq("id", id).eq("user_id", userId);
   return error ? { error: "failed" } : ok;
 }

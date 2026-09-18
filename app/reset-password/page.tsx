@@ -1,95 +1,132 @@
 "use client";
 
 /* ===================== */
-/* Imports */
+/* Reset Password */
+/* Only usable from a valid recovery link: Supabase turns the link into a
+   temporary session. Without one, the page explains instead of failing.
+*/
 /* ===================== */
 
-import { useState } from "react";
-import { supabase } from "../lib/supabase";
-import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import AuthLayout from "../components/auth/AuthLayout";
+import { supabase } from "../lib/supabase";
+import { friendlyError } from "../lib/format";
 
-/* ===================== */
-/* Reset Password Page */
-/* Allows user to set new password */
-/* ===================== */
+const MIN_PASSWORD = 8;
 
 export default function ResetPasswordPage() {
   const router = useRouter();
 
+  const [status, setStatus] = useState<"checking" | "ready" | "invalid">("checking");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  async function handleUpdate(e: React.FormEvent) {
-    e.preventDefault();
+  useEffect(() => {
+    let active = true;
 
-    if (loading) return;
-
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-
-    if (password !== confirm) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
-    setLoading(true);
-    const toastId = toast.loading("Updating password...");
-
-    const { error } = await supabase.auth.updateUser({
-      password,
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (active && session && (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN")) setStatus("ready");
     });
 
-    toast.dismiss(toastId);
-    setLoading(false);
+    async function check() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!active) return;
+      if (session) return setStatus("ready");
 
-    if (error) {
-      toast.error(error.message);
-      return;
+      // Give the recovery link in the URL a moment to be exchanged.
+      setTimeout(() => {
+        if (active) setStatus((current) => (current === "checking" ? "invalid" : current));
+      }, 2500);
     }
 
-    toast.success("Password updated successfully");
-    router.push("/login");
+    void check();
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  async function handleUpdate(event: FormEvent) {
+    event.preventDefault();
+    if (loading) return;
+    if (password.length < MIN_PASSWORD) return setError(`Password must be at least ${MIN_PASSWORD} characters.`);
+    if (password !== confirm) return setError("Passwords do not match.");
+
+    setLoading(true);
+    setError("");
+    const { error: updateError } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+
+    if (updateError) return setError(friendlyError(updateError.message, "Could not update the password"));
+
+    toast.success("Password updated");
+    router.replace("/");
   }
 
   return (
-    <main className="authPage">
-      <form className="authForm" onSubmit={handleUpdate}>
-        <div className="authHeader">
-          <p className="authEyebrow">Security</p>
-          <h1>Set New Password</h1>
-          <p className="authSubtitle">
-            Choose a strong password for your account.
+    <AuthLayout eyebrow="Security" title="Choose a new password" subtitle="Use at least 8 characters.">
+      {status === "checking" ? (
+        <p className="font-mono text-xs text-faint">Verifying your reset link…</p>
+      ) : status === "invalid" ? (
+        <div className="space-y-4">
+          <p role="alert" className="rounded-lg bg-expense/10 px-3 py-2 text-sm text-expense">
+            This reset link is invalid or has expired.
           </p>
+          <Link href="/forgot-password" className="btn btn-primary w-full py-2.5">
+            Request a new link
+          </Link>
         </div>
-
-        <div className="authFields">
-          <input
-            type="password"
-            placeholder="New password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={loading}
-          />
-
-          <input
-            type="password"
-            placeholder="Confirm password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            required
-            disabled={loading}
-          />
-        </div>
-
-        <button className="saveBtn" disabled={loading}>
-          {loading ? "Updating..." : "Update Password"}
-        </button>
-      </form>
-    </main>
+      ) : (
+        <form onSubmit={handleUpdate} className="space-y-4" noValidate>
+          <div>
+            <label className="label" htmlFor="password">
+              New password
+            </label>
+            <input
+              id="password"
+              className="field"
+              type="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              disabled={loading}
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="confirm">
+              Confirm password
+            </label>
+            <input
+              id="confirm"
+              className="field"
+              type="password"
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(event) => setConfirm(event.target.value)}
+              disabled={loading}
+            />
+          </div>
+          {error ? (
+            <p role="alert" className="rounded-lg bg-expense/10 px-3 py-2 text-sm text-expense">
+              {error}
+            </p>
+          ) : null}
+          <button type="submit" className="btn btn-primary w-full py-2.5" disabled={loading}>
+            {loading ? "Updating…" : "Update password"}
+          </button>
+        </form>
+      )}
+    </AuthLayout>
   );
 }

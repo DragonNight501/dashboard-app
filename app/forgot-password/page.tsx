@@ -1,101 +1,84 @@
 "use client";
 
 /* ===================== */
-/* Imports */
+/* Forgot Password */
 /* ===================== */
 
 import { useState } from "react";
-import { supabase } from "../lib/supabase";
-import toast from "react-hot-toast";
+import type { FormEvent } from "react";
 import Link from "next/link";
-
-/* ===================== */
-/* Forgot Password Page */
-/* Sends reset password email to user */
-/* ===================== */
+import { MailCheck } from "lucide-react";
+import AuthLayout from "../components/auth/AuthLayout";
+import { supabase } from "../lib/supabase";
+import { friendlyError } from "../lib/format";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
 
-  async function handleReset(e: React.FormEvent) {
-    e.preventDefault();
-
+  async function handleReset(event: FormEvent) {
+    event.preventDefault();
     if (loading) return;
-    if (!email) {
-      toast.error("Please enter your email");
-      return;
-    }
+    if (!email.trim()) return setError("Please enter your email.");
 
     setLoading(true);
-    const toastId = toast.loading("Sending reset link...");
+    setError("");
 
-    const redirectTo =
-      typeof window !== "undefined"
-        ? `${window.location.origin}/reset-password`
-        : undefined;
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo,
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
     });
 
-    toast.dismiss(toastId);
     setLoading(false);
-
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-
+    if (resetError) return setError(friendlyError(resetError.message, "Could not send the email"));
     setSent(true);
-    toast.success("Reset email sent");
   }
 
   return (
-    <main className="authPage">
-      <form className="authForm" onSubmit={handleReset}>
-        <div className="authHeader">
-          <p className="authEyebrow">Security</p>
-          <h1>Reset Password</h1>
-          <p className="authSubtitle">
-            Enter your email and we will send you a reset link.
-          </p>
+    <AuthLayout
+      eyebrow="Security"
+      title="Reset your password"
+      subtitle="Enter your email and we will send you a link to choose a new password."
+    >
+      {sent ? (
+        <div className="card flex gap-3 rounded-xl p-4 text-sm text-muted">
+          <MailCheck className="h-5 w-5 shrink-0 text-income" />
+          If an account exists for {email.trim()}, a reset link is on its way.
         </div>
-
-        {sent ? (
-          <div className="authSuccessBox">
-            <p>Check your email for the reset link.</p>
-            <Link href="/login" className="authPrimaryLink">
-              Back to Login
-            </Link>
+      ) : (
+        <form onSubmit={handleReset} className="space-y-4" noValidate>
+          <div>
+            <label className="label" htmlFor="email">
+              Email
+            </label>
+            <input
+              id="email"
+              className="field"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              disabled={loading}
+            />
           </div>
-        ) : (
-          <>
-            <div className="authFields">
-              <input
-                type="email"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <button className="saveBtn" disabled={loading}>
-              {loading ? "Sending..." : "Send Reset Link"}
-            </button>
-
-            <p className="authSwitchText">
-              Remember your password?{" "}
-              <Link href="/login" className="authSwitchLink">
-                Login
-              </Link>
+          {error ? (
+            <p role="alert" className="rounded-lg bg-expense/10 px-3 py-2 text-sm text-expense">
+              {error}
             </p>
-          </>
-        )}
-      </form>
-    </main>
+          ) : null}
+          <button type="submit" className="btn btn-primary w-full py-2.5" disabled={loading}>
+            {loading ? "Sending…" : "Send reset link"}
+          </button>
+        </form>
+      )}
+
+      <p className="mt-5 text-center text-sm text-muted">
+        Remembered it?{" "}
+        <Link href="/login" className="font-medium text-fg hover:text-accent">
+          Back to login
+        </Link>
+      </p>
+    </AuthLayout>
   );
 }
