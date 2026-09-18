@@ -5,8 +5,8 @@
 /* ===================== */
 
 import { useEffect, useMemo, useState } from "react";
-import type { Transaction } from "../page";
-import { supabase } from "../lib/supabase";
+import type { Transaction } from "../lib/types";
+import { addTransactions, deleteTransaction, updateTransaction } from "../lib/data";
 import toast from "react-hot-toast";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -230,10 +230,7 @@ export default function Table({ data, loading, fetchData }: TableProps) {
         : editingItem.date,
     };
 
-    const { error } = await supabase
-      .from("transactions")
-      .update(payload)
-      .eq("id", id);
+    const { error } = await updateTransaction(id, payload);
 
     if (error) {
       toast.error("Failed to update transaction");
@@ -251,21 +248,17 @@ export default function Table({ data, loading, fetchData }: TableProps) {
   /* ===================== */
 
   async function handleAdd() {
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData.user;
-
-    if (!user) {
-      toast.error("You must be logged in");
-      return;
-    }
-
-    const { error } = await supabase.from("transactions").insert([
+    const { error } = await addTransactions([
       {
         ...form,
         date: form.date.toISOString().split("T")[0],
-        user_id: user.id,
       },
     ]);
+
+    if (error === "not_authenticated") {
+      toast.error("You must be logged in");
+      return;
+    }
 
     if (error) {
       toast.error("Failed to add transaction");
@@ -287,10 +280,7 @@ export default function Table({ data, loading, fetchData }: TableProps) {
 
     setIsDeleting(true);
 
-    const { error } = await supabase
-      .from("transactions")
-      .delete()
-      .eq("id", deleteId);
+    const { error } = await deleteTransaction(deleteId);
 
     setIsDeleting(false);
 

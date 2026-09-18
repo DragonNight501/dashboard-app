@@ -1977,3 +1977,157 @@ body.dark .navBtn:hover {
         background-position: 0% 50%;
     }
 }
+
+/* ===================== */
+/* Demo Mode */
+/* ===================== */
+
+.authDivider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #9ca3af;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.authDivider::before,
+.authDivider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.demoEntryBtn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1px dashed var(--primary-light);
+    border-radius: var(--radius-md);
+    background: rgba(255, 77, 109, 0.06);
+    color: var(--primary);
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.demoEntryBtn span {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-soft);
+}
+
+.demoEntryBtn:hover:not(:disabled) {
+    background: rgba(255, 77, 109, 0.12);
+    transform: translateY(-1px);
+}
+
+.demoEntryBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.authLinkButton {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+}
+
+.demoBadge {
+    display: inline-block;
+    margin-left: 0.6rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: var(--warning);
+    color: #111827;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.navLeft {
+    display: flex;
+    align-items: center;
+}
+
+.demoBanner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid rgba(250, 204, 21, 0.55);
+    border-radius: var(--radius-lg);
+    background: rgba(250, 204, 21, 0.12);
+    color: var(--text);
+}
+
+.demoBannerTitle {
+    font-weight: 800;
+}
+
+.demoBannerText {
+    margin-top: 0.2rem;
+    font-size: 14px;
+    color: var(--text-soft);
+    max-width: 60ch;
+}
+
+.demoBannerActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.demoGhostBtn,
+.demoPrimaryBtn {
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.demoGhostBtn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+}
+
+.demoPrimaryBtn {
+    border: none;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary));
+    color: white;
+}
+
+.demoGhostBtn:hover,
+.demoPrimaryBtn:hover {
+    transform: translateY(-1px);
+}
+
+/* The navbar had no small-screen rule, so its buttons overflowed on phones. */
+@media (max-width: 600px) {
+    .navbar {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 0.9rem 1rem;
+    }
+
+    .navRight {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { Transaction } from "../page";
+import type { Transaction } from "../lib/types";
 
 type Props = {
   transactions: Transaction[];

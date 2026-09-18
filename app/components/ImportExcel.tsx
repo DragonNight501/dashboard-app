@@ -1,6 +1,6 @@
 "use client";
 
-import { supabase } from "../lib/supabase";
+import { addTransactions } from "../lib/data";
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
 
@@ -37,14 +37,6 @@ export default function ImportExcel({ fetchData }: Props) {
           return;
         }
 
-        const { data: userData } = await supabase.auth.getUser();
-        const user = userData.user;
-
-        if (!user) {
-          toast.error("User not authenticated");
-          return;
-        }
-
         const formattedData = jsonData.map((row) => {
           const rawAmount = Number(row.amount || row.price || 0);
 
@@ -59,13 +51,15 @@ export default function ImportExcel({ fetchData }: Props) {
             amount: Math.abs(rawAmount),
             category: String(row.category || "").trim() || "General",
             status: String(row.status || "").trim() || "Completed",
-            user_id: user.id,
           };
         });
 
-        const { error } = await supabase
-          .from("transactions")
-          .insert(formattedData);
+        const { error } = await addTransactions(formattedData);
+
+        if (error === "not_authenticated") {
+          toast.error("User not authenticated");
+          return;
+        }
 
         if (error) {
           toast.error("Failed to import data");

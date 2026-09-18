@@ -6,7 +6,6 @@
 
 import { useEffect, useState } from "react";
 import AuthGuard from "./components/AuthGuard";
-import Header from "./components/Header";
 import Navbar from "./components/Navbar";
 import Cards from "./components/Cards";
 import OverviewChart from "./components/OverviewChart";
@@ -15,24 +14,9 @@ import MonthlyLineChart from "./components/MonthlyLineChart";
 import ImportExcel from "./components/ImportExcel";
 import BudgetManager from "./components/BudgetManager";
 import Table from "./components/Table";
-import { supabase } from "./lib/supabase";
-
-/* ===================== */
-/* Types */
-/* Defines the transaction structure used across the dashboard.
- */
-/* ===================== */
-
-export type Transaction = {
-  id: number;
-  date: string;
-  type: string;
-  description: string;
-  amount: number;
-  category: string;
-  status: string;
-  user_id: string;
-};
+import DemoBanner from "./components/DemoBanner";
+import { listTransactions } from "./lib/data";
+import type { Transaction } from "./lib/types";
 
 /* ===================== */
 /* Home Page */
@@ -49,6 +33,9 @@ export default function HomePage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Bumped when demo data is reset so every section reloads its data.
+  const [dataVersion, setDataVersion] = useState(0);
+
   /* ===================== */
   /* Fetch Transactions */
   /* Gets the authenticated user, then loads only their transactions.
@@ -57,30 +44,7 @@ export default function HomePage() {
 
   const fetchData = async () => {
     setLoading(true);
-
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-
-    if (userError || !userData.user) {
-      setTransactions([]);
-      setLoading(false);
-      return;
-    }
-
-    const user = userData.user;
-
-    const { data, error } = await supabase
-      .from("transactions")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("date", { ascending: false });
-
-    if (error) {
-      setTransactions([]);
-      setLoading(false);
-      return;
-    }
-
-    setTransactions((data as Transaction[]) || []);
+    setTransactions(await listTransactions());
     setLoading(false);
   };
 
@@ -92,7 +56,7 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [dataVersion]);
 
   /* ===================== */
   /* UI Rendering */
@@ -107,9 +71,11 @@ export default function HomePage() {
   /* ===================== */
 
   return (
-    <AuthGuard>
+    <AuthGuard allowDemo>
       <Navbar />
-      <main className="dashboardPage">
+      <main className="dashboardPage" key={dataVersion}>
+        <DemoBanner onReset={() => setDataVersion((version) => version + 1)} />
+
         {/* ===================== */}
         {/* Header Section */}
         {/* ===================== */}

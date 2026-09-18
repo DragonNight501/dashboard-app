@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { startDemo } from "../lib/demo";
 
 /* ===================== */
 /* Signup Page */
@@ -231,6 +232,20 @@ export default function SignupPage() {
           <Link href="/login" className="authSwitchLink">
             Login
           </Link>
+        </p>
+
+        <p className="authSwitchText">
+          Just looking?{" "}
+          <button
+            type="button"
+            className="authSwitchLink authLinkButton"
+            onClick={() => {
+              startDemo();
+              router.push("/");
+            }}
+          >
+            Try the demo
+          </button>
         </p>
       </form>
     </main>

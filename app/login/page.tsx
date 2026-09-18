@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
 import { login } from "../lib/auth";
+import { exitDemo, startDemo } from "../lib/demo";
 import toast from "react-hot-toast";
 import Link from "next/link";
 
@@ -77,7 +78,21 @@ export default function LoginPage() {
       return;
     }
 
+    // A real account replaces any demo session in this browser.
+    exitDemo();
     toast.success("Logged in successfully");
+    router.push("/");
+  };
+
+  /* ===================== */
+  /* Demo Handler */
+  /* Opens the dashboard with sample data, no account needed.
+   */
+  /* ===================== */
+
+  const handleDemo = () => {
+    startDemo();
+    toast.success("Welcome to the demo");
     router.push("/");
   };
 
@@ -143,6 +158,20 @@ export default function LoginPage() {
             Create one
           </Link>
         </p>
+
+        <div className="authDivider" role="separator">
+          <span>or</span>
+        </div>
+
+        <button
+          type="button"
+          className="demoEntryBtn"
+          onClick={handleDemo}
+          disabled={loading}
+        >
+          Explore the demo
+          <span>No account needed · sample data</span>
+        </button>
       </form>
     </main>
   );

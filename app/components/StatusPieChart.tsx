@@ -5,7 +5,7 @@
 /* ===================== */
 
 import { useEffect, useMemo, useState } from "react";
-import type { Transaction } from "../page";
+import type { Transaction } from "../lib/types";
 import {
   PieChart,
   Pie,

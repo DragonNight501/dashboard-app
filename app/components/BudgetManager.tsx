@@ -1,15 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "../lib/supabase";
 import toast from "react-hot-toast";
-import type { Transaction } from "../page";
-
-type Budget = {
-  id: string;
-  category: string;
-  amount: number;
-};
+import { addBudget, deleteBudget, listBudgets } from "../lib/data";
+import type { Budget, Transaction } from "../lib/types";
 
 type BudgetWithStats = Budget & {
   spent: number;
@@ -65,22 +59,14 @@ export default function BudgetManager({ transactions }: Props) {
   }, [budgets, transactions]);
 
   const fetchBudgets = async () => {
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData.user;
-
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from("budgets")
-      .select("*")
-      .eq("user_id", user.id);
+    const { data, error } = await listBudgets();
 
     if (error) {
       toast.error("Failed to load budgets");
       return;
     }
 
-    setBudgets((data as Budget[]) || []);
+    setBudgets(data);
   };
 
   useEffect(() => {
@@ -97,24 +83,14 @@ export default function BudgetManager({ transactions }: Props) {
 
     setIsLoading(true);
 
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData.user;
-
-    if (!user) {
-      toast.error("User not found");
-      setIsLoading(false);
-      return;
-    }
-
-    const { error } = await supabase.from("budgets").insert([
-      {
-        category: cleanCategory,
-        amount,
-        user_id: user.id,
-      },
-    ]);
+    const { error } = await addBudget(cleanCategory, amount);
 
     setIsLoading(false);
+
+    if (error === "not_authenticated") {
+      toast.error("User not found");
+      return;
+    }
 
     if (error) {
       toast.error("Failed to add budget");
@@ -133,7 +109,7 @@ export default function BudgetManager({ transactions }: Props) {
     );
     if (!confirmed) return;
 
-    const { error } = await supabase.from("budgets").delete().eq("id", id);
+    const { error } = await deleteBudget(id);
 
     if (error) {
       toast.error("Failed to delete budget");

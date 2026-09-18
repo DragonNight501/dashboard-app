@@ -7,6 +7,7 @@
 import { useEffect, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
+import { isDemoMode } from "../lib/demo";
 
 /* ===================== */
 /* Types */
@@ -14,6 +15,8 @@ import { supabase } from "../lib/supabase";
 
 type AuthGuardProps = {
   children: ReactNode;
+  /** Let demo visitors (no account) through. Off for account pages. */
+  allowDemo?: boolean;
 };
 
 /* ===================== */
@@ -22,7 +25,7 @@ type AuthGuardProps = {
  */
 /* ===================== */
 
-export default function AuthGuard({ children }: AuthGuardProps) {
+export default function AuthGuard({ children, allowDemo = false }: AuthGuardProps) {
   const router = useRouter();
 
   const [isChecking, setIsChecking] = useState(true);
@@ -35,8 +38,15 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   useEffect(() => {
     let isMounted = true;
+    const demo = isDemoMode();
 
     async function checkSession() {
+      if (demo) {
+        if (allowDemo) setIsChecking(false);
+        else router.replace("/");
+        return;
+      }
+
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -52,6 +62,13 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     }
 
     checkSession();
+
+    // Demo visitors have no Supabase session to watch.
+    if (demo) {
+      return () => {
+        isMounted = false;
+      };
+    }
 
     /* ===================== */
     /* Auth State Listener */
@@ -76,7 +93,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [router]);
+  }, [router, allowDemo]);
 
   /* ===================== */
   /* Loading State */
